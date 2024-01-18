@@ -1,9 +1,9 @@
 from multiprocessing import Process, shared_memory
 import numpy as np
 
-def run_parallel(n: int, k: int):
+def run_parallel(n: int, arr: np.ndarray):
     for i in range(n):
-        processes = [Process(target=calc, args=(i, j)) for j in range(n)]
+        processes = [Process(target=calc, args=(arr, i, j)) for j in range(n)]
         for process in processes:
             process.start()
             process.join()
@@ -21,11 +21,10 @@ def get_bicoeff(n: int, k: int) -> int:
     shm = shared_memory.SharedMemory(create=True, size=tmp.nbytes)
     existing_shm = shared_memory.SharedMemory(name=shm.name)
     arr = np.ndarray((n, n), dtype=np.int64, buffer=existing_shm.buf)
-    run_parallel(n)
+    run_parallel(n, arr)
     print(arr)
     print("C(n, k)=C({}, {}): ".format(n - 1, k - 1), arr[n-1, k-1])
     existing_shm.close()
     existing_shm.unlink()
     del arr
-
 
